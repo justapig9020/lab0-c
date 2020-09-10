@@ -5,6 +5,25 @@
 #include "harness.h"
 #include "queue.h"
 
+static list_ele_t *new_ele(char *s)
+{
+    list_ele_t *newE = malloc(sizeof(list_ele_t));
+    if (!newE)
+        goto fail;
+    size_t len = strlen(s) + 1;
+    newE->value = malloc(len);
+    if (!newE->value)
+        goto freeEle;
+    strncpy(newE->value, s, len);
+    newE->next = NULL;
+    return newE;
+
+freeEle:
+    free(newE);
+    newE = NULL;
+fail:
+    return NULL;
+}
 /*
  * Create empty queue.
  * Return NULL if could not allocate space.
@@ -12,7 +31,9 @@
 queue_t *q_new()
 {
     queue_t *q = malloc(sizeof(queue_t));
-    /* TODO: What if malloc returned NULL? */
+    if (!q)
+        return NULL;
+    q->size = 0;
     q->head = NULL;
     return q;
 }
@@ -20,8 +41,14 @@ queue_t *q_new()
 /* Free all storage used by queue */
 void q_free(queue_t *q)
 {
-    /* TODO: How about freeing the list elements and the strings? */
-    /* Free queue structure */
+    if (!q)
+        return;
+    while (q->head) {
+        list_ele_t *buf = q->head;
+        free(buf->value);
+        buf->value = NULL;
+        free(buf);
+    }
     free(q);
 }
 
@@ -35,12 +62,16 @@ void q_free(queue_t *q)
 bool q_insert_head(queue_t *q, char *s)
 {
     list_ele_t *newh;
-    /* TODO: What should you do if the q is NULL? */
-    newh = malloc(sizeof(list_ele_t));
-    /* Don't forget to allocate space for the string and copy it */
-    /* What if either call to malloc returns NULL? */
+    if (!q)
+        return false;
+
+    newh = new_ele(s);
+    if (!newh)
+        return false;
+
     newh->next = q->head;
     q->head = newh;
+    q->size += 1;
     return true;
 }
 
@@ -69,9 +100,18 @@ bool q_insert_tail(queue_t *q, char *s)
  */
 bool q_remove_head(queue_t *q, char *sp, size_t bufsize)
 {
-    /* TODO: You need to fix up this code. */
-    /* TODO: Remove the above comment when you are about to implement. */
+    if (!q || !q->head)
+        return false;
+
+    list_ele_t *buf = q->head;
     q->head = q->head->next;
+    q->size -= 1;
+
+    strncpy(sp, buf->value, bufsize);
+    sp[bufsize - 1] = '\0';
+    free(buf->value);
+    buf->value = NULL;
+    free(buf);
     return true;
 }
 
@@ -81,10 +121,7 @@ bool q_remove_head(queue_t *q, char *sp, size_t bufsize)
  */
 int q_size(queue_t *q)
 {
-    /* TODO: You need to write the code for this function */
-    /* Remember: It should operate in O(1) time */
-    /* TODO: Remove the above comment when you are about to implement. */
-    return 0;
+    return q->size;
 }
 
 /*
