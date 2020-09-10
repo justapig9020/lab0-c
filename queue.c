@@ -35,6 +35,7 @@ queue_t *q_new()
         return NULL;
     q->size = 0;
     q->head = NULL;
+    q->tail = &q->head;
     return q;
 }
 
@@ -45,6 +46,7 @@ void q_free(queue_t *q)
         return;
     while (q->head) {
         list_ele_t *buf = q->head;
+        q->head = buf->next;
         free(buf->value);
         buf->value = NULL;
         free(buf);
@@ -71,6 +73,8 @@ bool q_insert_head(queue_t *q, char *s)
 
     newh->next = q->head;
     q->head = newh;
+    if (*q->tail == q->head)
+        q->tail = &q->head->next;
     q->size += 1;
     return true;
 }
@@ -84,10 +88,17 @@ bool q_insert_head(queue_t *q, char *s)
  */
 bool q_insert_tail(queue_t *q, char *s)
 {
-    /* TODO: You need to write the complete code for this function */
-    /* Remember: It should operate in O(1) time */
-    /* TODO: Remove the above comment when you are about to implement. */
-    return false;
+    if (!q)
+        return false;
+    list_ele_t *newE = new_ele(s);
+    if (!newE)
+        return false;
+
+    *q->tail = newE;
+    q->tail = &newE->next;
+
+    q->size += 1;
+    return true;
 }
 
 /*
@@ -104,6 +115,8 @@ bool q_remove_head(queue_t *q, char *sp, size_t bufsize)
         return false;
 
     list_ele_t *buf = q->head;
+    if (&q->head->next == q->tail)
+        q->tail = &q->head;
     q->head = q->head->next;
     q->size -= 1;
 
@@ -133,8 +146,19 @@ int q_size(queue_t *q)
  */
 void q_reverse(queue_t *q)
 {
-    /* TODO: You need to write the code for this function */
-    /* TODO: Remove the above comment when you are about to implement. */
+    if (!q || !q->head)
+        return;
+
+    list_ele_t *ptr = q->head;
+    list_ele_t *prev = NULL;
+    q->tail = &ptr->next;
+    while (ptr) {
+        list_ele_t *next = ptr->next;
+        ptr->next = prev;
+        prev = ptr;
+        ptr = next;
+    }
+    q->head = prev;
 }
 
 /*
