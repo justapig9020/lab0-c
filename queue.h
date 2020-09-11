@@ -94,4 +94,6 @@ void q_reverse(queue_t *q);
  */
 void q_sort(queue_t *q);
 
+void q_half(queue_t *q);
+
 #endif /* LAB0_QUEUE_H */

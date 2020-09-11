@@ -2,8 +2,20 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "dudect/constant.h"
 #include "harness.h"
 #include "queue.h"
+
+static list_ele_t **find_mid_ele(list_ele_t **head)
+{
+    list_ele_t **faster = head;
+    list_ele_t **slower = head;
+    while (*faster && (*faster)->next) {
+        slower = &(*slower)->next;
+        faster = &(*faster)->next->next;
+    }
+    return slower;
+}
 
 static list_ele_t *new_ele(char *s)
 {
@@ -120,8 +132,11 @@ bool q_remove_head(queue_t *q, char *sp, size_t bufsize)
     q->head = q->head->next;
     q->size -= 1;
 
-    strncpy(sp, buf->value, bufsize);
-    sp[bufsize - 1] = '\0';
+    if (sp) {
+        strncpy(sp, buf->value, bufsize);
+        sp[bufsize - 1] = '\0';
+    }
+
     free(buf->value);
     buf->value = NULL;
     free(buf);
@@ -134,6 +149,8 @@ bool q_remove_head(queue_t *q, char *sp, size_t bufsize)
  */
 int q_size(queue_t *q)
 {
+    if (!q)
+        return 0;
     return q->size;
 }
 
@@ -166,8 +183,60 @@ void q_reverse(queue_t *q)
  * No effect if q is NULL or empty. In addition, if q has only one
  * element, do nothing.
  */
+static list_ele_t *merge_sort(list_ele_t *head)
+{
+    if (!head || !head->next)
+        return head;
+
+    list_ele_t **ptr = find_mid_ele(&head);
+    list_ele_t *mid = *ptr;
+    *ptr = NULL;
+
+    head = merge_sort(head);
+    mid = merge_sort(mid);
+
+    list_ele_t *mergered = NULL;
+    ptr = &mergered;
+    while (head && mid) {
+        list_ele_t *smeller;
+        if (strcmp(head->value, mid->value) > 0) {
+            smeller = mid;
+            mid = mid->next;
+        } else {
+            smeller = head;
+            head = head->next;
+        }
+        *ptr = smeller;
+        ptr = &(*ptr)->next;
+    }
+
+    while (head) {
+        *ptr = head;
+        head = head->next;
+        ptr = &(*ptr)->next;
+    }
+    while (mid) {
+        *ptr = mid;
+        mid = mid->next;
+        ptr = &(*ptr)->next;
+    }
+    *ptr = NULL;
+    return mergered;
+}
+
 void q_sort(queue_t *q)
 {
-    /* TODO: You need to write the code for this function */
-    /* TODO: Remove the above comment when you are about to implement. */
+    if (!q || !q->head)
+        return;
+
+    q->head = merge_sort(q->head);
+}
+
+void q_half(queue_t *q)
+{
+    if (!q || !q->head)
+        return;
+
+    list_ele_t **ptr = find_mid_ele(&q->head);
+    printf("%s\n", (*ptr)->value);
 }
