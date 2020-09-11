@@ -74,6 +74,7 @@ static bool do_reverse(int argc, char *argv[]);
 static bool do_size(int argc, char *argv[]);
 static bool do_sort(int argc, char *argv[]);
 static bool do_show(int argc, char *argv[]);
+static bool do_half(int argc, char *argv[]);
 
 static void queue_init();
 
@@ -98,6 +99,8 @@ static void console_init()
     add_cmd("size", do_size,
             " [n]            | Compute queue size n times (default: n == 1)");
     add_cmd("show", do_show, "                | Show queue contents");
+    add_cmd("half", do_half,
+            "                | Print the value of the middle of the queue");
     add_param("length", &string_length, "Maximum length of displayed string",
               NULL);
     add_param("malloc", &fail_probability, "Malloc failure probability percent",
@@ -624,6 +627,16 @@ static bool do_show(int argc, char *argv[])
         return false;
     }
     return show_queue(0);
+}
+
+static bool do_half(int argc, char *argv[])
+{
+    if (argc != 1) {
+        report(1, "%s takes no arguments", argv[0]);
+        return false;
+    }
+    q_half(q);
+    return true;
 }
 
 /* Signal handlers */
