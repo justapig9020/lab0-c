@@ -230,6 +230,9 @@ void q_sort(queue_t *q)
         return;
 
     q->head = merge_sort(q->head);
+    while (*q->tail) {
+        q->tail = &(*q->tail)->next;
+    }
 }
 
 void q_half(queue_t *q)
